@@ -488,12 +488,13 @@ void verify() {
         // printf("dt_y_idx[%lu]: %lu\n", i, dt_y_idx[i]);
     }
     for (i = 0; i < N; i++) {
-        if (i == 0 || dt_y_idx[i] != 0) {
+        if (i == 0 || dt_y_idx[i] != -1) {
             y[dt_y_idx[i]] = dt_y[i];
             // if (i == 27) {
             //     printf("y[%lu] = %f\n", dt_y_idx[i], y[i]);
             // }
         }
+        break;
     }
 
 	for(i = 0; i < N ; i++) {
