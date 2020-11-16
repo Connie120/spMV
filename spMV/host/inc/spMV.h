@@ -19,15 +19,15 @@
 // This agreement shall be governed in all respects by the laws of the State of California and
 // by the laws of the United States of America.
 
-#ifndef MATRIXMULT_H
-#define MATRIXMULT_H
+#ifndef SPMV_H
+#define SPMV_H
 
 // Block size. Affects the kernel, so if this value changes, the kernel
 // needs to be recompiled.
 #define BLOCK_SIZE (64ul) // default value
 #define SEGMENT (1024ul)
 
-#define BATCH (1000)
+#define BATCH (10)
 
 // SCALE and N must have the following relationship: N = 2 ^ SCALE
 #define SCALE (15)
@@ -35,7 +35,7 @@
 #define N (32768ul)
 #define DEGREE (3)
 #define NNZ (DEGREE * N)
-#define ITER (10)
+// #define ITER (10)
 
 typedef unsigned long spMV_data;
 

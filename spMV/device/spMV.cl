@@ -7,7 +7,7 @@
 __kernel void spMV( __global float* restrict V, __global spMV_data* restrict col, __global spMV_data* restrict row, 
                      __global float* restrict x, __global float* restrict y, __global spMV_data* restrict y_idx)
 {
-    __local float x_seg[SEGMENT];
+    __private float x_seg[SEGMENT];
     __local spMV_data y_local_idx[N];
     __local float y_local[N];
     unsigned long i, j;
