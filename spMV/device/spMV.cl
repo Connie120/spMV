@@ -4,12 +4,12 @@
 #define SIMD_WORK_ITEMS 4 // default value
 #endif
 
-__kernel void spMV( __global float* restrict V, __global spMV_data* restrict col, __global spMV_data* restrict row, 
-                     __global float* restrict x, __global float* restrict y, __global spMV_data* restrict y_idx)
+__kernel void spMV( __global spMV_float* restrict V, __global spMV_data* restrict col, __global spMV_data* restrict row, 
+                     __global spMV_float* restrict x, __global spMV_float* restrict y, __global spMV_data* restrict y_idx)
 {
-    __private float x_seg[SEGMENT];
+    __private spMV_float x_seg[SEGMENT];
     __local spMV_data y_local_idx[N];
-    __local float y_local[N];
+    __local spMV_float y_local[N];
     unsigned long i, j;
     spMV_data k;
     spMV_data row_start, row_end;

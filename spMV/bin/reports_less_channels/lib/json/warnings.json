@@ -1,0 +1,6 @@
+{"rows":[
+{"debug":[[{"filename":"spMV_pipeline.cl"
+,"line":79}]]
+,"details":["spMV_pipeline.cl:79: Compiler Warning:     Multiple writes to channel 'c1_y' may lead to bad QoR"]
+,"name":"    Multiple writes to channel 'c1_y' may lead to bad QoR"}
+]}

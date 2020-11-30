@@ -1,0 +1,229 @@
+{
+  "nodes":
+  [
+    {
+      "name":"store"
+      , "id":3049657576
+      , "type":"kernel"
+      , "children":
+      [
+        {
+          "name":"store.B2"
+          , "id":3049849888
+          , "type":"bb"
+        }
+        , {
+          "name":"store.B6"
+          , "id":3049780752
+          , "type":"bb"
+        }
+        , {
+          "name":"store.B1"
+          , "id":3049840704
+          , "type":"bb"
+          , "children":
+          [
+            {
+              "name":"Cluster 10"
+              , "id":3081750048
+              , "type":"cluster"
+            }
+          ]
+        }
+        , {
+          "name":"store.B0"
+          , "id":3049778112
+          , "type":"bb"
+        }
+        , {
+          "name":"store.B4"
+          , "id":3049780592
+          , "type":"bb"
+          , "children":
+          [
+            {
+              "name":"Cluster 11"
+              , "id":3085925968
+              , "type":"cluster"
+            }
+          ]
+        }
+        , {
+          "name":"store.B3"
+          , "id":3049780512
+          , "type":"bb"
+        }
+        , {
+          "name":"store.B5"
+          , "id":3049780672
+          , "type":"bb"
+          , "children":
+          [
+            {
+              "name":"Cluster 13"
+              , "id":3079845568
+              , "type":"cluster"
+            }
+            , {
+              "name":"Cluster 12"
+              , "id":3080951024
+              , "type":"cluster"
+            }
+            , {
+              "name":"Cluster 14"
+              , "id":3080832544
+              , "type":"cluster"
+            }
+          ]
+        }
+      ]
+    }
+    , {
+      "name":"execute"
+      , "id":3049483208
+      , "type":"kernel"
+      , "children":
+      [
+        {
+          "name":"execute.B0"
+          , "id":3049734240
+          , "type":"bb"
+        }
+        , {
+          "name":"execute.B1"
+          , "id":3049734768
+          , "type":"bb"
+          , "children":
+          [
+            {
+              "name":"Cluster 0"
+              , "id":3053306144
+              , "type":"cluster"
+            }
+          ]
+        }
+        , {
+          "name":"execute.B2"
+          , "id":3049735136
+          , "type":"bb"
+        }
+        , {
+          "name":"execute.B4"
+          , "id":3049735296
+          , "type":"bb"
+          , "children":
+          [
+            {
+              "name":"Cluster 3"
+              , "id":3054647648
+              , "type":"cluster"
+            }
+            , {
+              "name":"Cluster 2"
+              , "id":3053965936
+              , "type":"cluster"
+            }
+          ]
+        }
+        , {
+          "name":"execute.B3"
+          , "id":3049735216
+          , "type":"bb"
+          , "children":
+          [
+            {
+              "name":"Cluster 1"
+              , "id":3053657616
+              , "type":"cluster"
+            }
+          ]
+        }
+      ]
+    }
+    , {
+      "name":"load"
+      , "id":3049660168
+      , "type":"kernel"
+      , "children":
+      [
+        {
+          "name":"load.B4"
+          , "id":3049829776
+          , "type":"bb"
+        }
+        , {
+          "name":"load.B6"
+          , "id":3049829936
+          , "type":"bb"
+          , "children":
+          [
+            {
+              "name":"Cluster 8"
+              , "id":3068314320
+              , "type":"cluster"
+            }
+            , {
+              "name":"Cluster 7"
+              , "id":3068278304
+              , "type":"cluster"
+            }
+            , {
+              "name":"Cluster 9"
+              , "id":3063721376
+              , "type":"cluster"
+            }
+            , {
+              "name":"Cluster 6"
+              , "id":3052579456
+              , "type":"cluster"
+            }
+          ]
+        }
+        , {
+          "name":"load.B0"
+          , "id":3049826064
+          , "type":"bb"
+        }
+        , {
+          "name":"load.B1"
+          , "id":3049829056
+          , "type":"bb"
+        }
+        , {
+          "name":"load.B5"
+          , "id":3049829856
+          , "type":"bb"
+        }
+        , {
+          "name":"load.B3"
+          , "id":3049829696
+          , "type":"bb"
+          , "children":
+          [
+            {
+              "name":"Cluster 5"
+              , "id":3062687296
+              , "type":"cluster"
+            }
+          ]
+        }
+        , {
+          "name":"load.B2"
+          , "id":3049829616
+          , "type":"bb"
+          , "children":
+          [
+            {
+              "name":"Cluster 4"
+              , "id":3067750368
+              , "type":"cluster"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+  , "links":
+  [
+  ]
+}

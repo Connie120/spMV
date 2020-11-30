@@ -40,27 +40,22 @@ cl_kernel load_kernel;
 cl_kernel exec_kernel;
 cl_kernel store_kernel;
 
+cl_mem A_buf;
 cl_mem x_buf;
-cl_mem V_buf;
-cl_mem col_buf;
-cl_mem row_buf;
 cl_mem y_buf;
 cl_mem y_idx_buf;
 
-float* dt_x = (float*)acl_aligned_malloc(N * sizeof(float));
-float* dt_y = (float*)acl_aligned_malloc(N * sizeof(float));
-spMV_data* dt_y_idx = (spMV_data*)acl_aligned_malloc(N * sizeof(spMV_data));
-float* dt_A = (float*)acl_aligned_malloc(N * N * sizeof(float));
-float* dt_V = (float*)acl_aligned_malloc(NNZ * sizeof(float));
-spMV_data* dt_COL = (spMV_data*)acl_aligned_malloc(NNZ * sizeof(spMV_data));
-spMV_data* dt_ROW = (spMV_data*)acl_aligned_malloc(NNZ * sizeof(spMV_data));
+spMV_float* dt_x = (spMV_float*)acl_aligned_malloc(N * sizeof(spMV_float));
+pack_out* dt_y;
+pack_in* dt_A = (pack_in*)acl_aligned_malloc(NNZ * sizeof(pack_in));
 
-float* ref_output = (float*)acl_aligned_malloc(N * sizeof(float));
+spMV_float* ref_output;
 
 spMV_data real_NNZ = 0;
+spMV_data NZR = 0; // Number of non-zero rows
 
 // Function prototypes
-void calc_result(float *V, float *x, float *y);
+void calc_result(pack_in *A, spMV_float *x, spMV_float *y);
 int nearlyEqual(float a, float b);
 bool init_opencl();
 void init_problem();
@@ -69,7 +64,7 @@ void verify();
 void verifyZeros();
 void cleanup();
 
-bool mySort(unsigned long a, unsigned long b) {
+bool mySort(spMV_data a, spMV_data b) {
     return(a < b);
 }
 
@@ -167,36 +162,20 @@ bool init_opencl() {
 
     // Input buffer.
     x_buf = clCreateBuffer(context, CL_MEM_READ_ONLY,
-                                    N * sizeof(float), NULL, &status);
+                                    N * sizeof(spMV_float), NULL, &status);
     checkError(status, "Failed to create buffer for input vector");
 	  printf("x buffer done\n");
 
     // Matrix buffers.
-    V_buf = clCreateBuffer(context, CL_MEM_READ_ONLY,
-                                    NNZ * sizeof(float), NULL, &status);
-    checkError(status, "Failed to create buffer for V");
-	printf("V buffer done\n");
-
-	col_buf = clCreateBuffer(context, CL_MEM_READ_ONLY,
-                                    NNZ * sizeof(spMV_data), NULL, &status);
-    checkError(status, "Failed to create buffer for V");
-	printf("V buffer done\n");
-
-	row_buf = clCreateBuffer(context, CL_MEM_READ_ONLY,
-                                    NNZ * sizeof(spMV_data), NULL, &status);
-    checkError(status, "Failed to create buffer for V");
-	printf("V buffer done\n");
+    A_buf = clCreateBuffer(context, CL_MEM_READ_ONLY, NNZ * sizeof(pack_in), NULL, &status);
+    checkError(status, "Failed to create buffer for A");
+	printf("A buffer done\n");
 
     // Output buffer.
     y_buf = clCreateBuffer(context, CL_MEM_WRITE_ONLY,
-                                    N * sizeof(float), NULL, &status);
+                                    NNZ * sizeof(pack_out), NULL, &status);
     checkError(status, "Failed to create buffer for output");
 	printf("y buffer done\n");
-
-    y_idx_buf = clCreateBuffer(context, CL_MEM_WRITE_ONLY,
-                                    N * sizeof(spMV_data), NULL, &status);
-    checkError(status, "Failed to create buffer for output");
-	printf("y index buffer done\n");
 
     return true;
 }
@@ -210,14 +189,7 @@ void init_problem() {
     // Generate input and weight matrices.
     printf("Generating inputs\n");
 
-    unsigned long i,j;
-
-    // Set the actual output and reference output matrices to 0.
-    for(i = 0; i < N; i++) {
-        dt_y[i] = 0;
-        dt_y_idx[i] = 0;
-        ref_output[i] = 0;
-    }
+    spMV_data i,j;
 
     // Generate the input matrix
     printf("The number of expected non-zero elements in the whole matrix is: %lu\n", NNZ);
@@ -226,11 +198,11 @@ void init_problem() {
     // }
 
     // for (i = 0; i < NNZ;) {
-    //     unsigned long index = (unsigned long) (N * N * ((double) rand() / (RAND_MAX + 1.0)));
+    //     spMV_data index = (spMV_data) (N * N * ((double) rand() / (RAND_MAX + 1.0)));
     //     if (dt_A[index] != 0) {
     //         continue;
     //     }
-    //     dt_A[index] = ((float)(rand()%RANGE))/RANGE;
+    //     dt_A[index] = ((spMV_float)(rand()%RANGE))/RANGE;
     //     if (dt_A[index] == 0) {
     //         continue;
     //     }
@@ -238,8 +210,8 @@ void init_problem() {
     // }
 
 	// // Changed the input matrix into the CSR form (first block)
-	// unsigned long k = 0;
-    // unsigned long temp = 0;
+	// spMV_data k = 0;
+    // spMV_data temp = 0;
 	// dt_ROW[0] = 0;
 	// for (i = 0; i < N; i++) {
 	// 	for (j = 0; j < SEGMENT; j++) {
@@ -260,12 +232,12 @@ void init_problem() {
     float c_norm = c / (1 - ab);
     float a_norm = a / ab;
 
-    unsigned long ii_bit = 0;
-    unsigned long jj_bit = 0;
-    unsigned long start_node = 0;
-    unsigned long end_node = 0;
+    spMV_data ii_bit = 0;
+    spMV_data jj_bit = 0;
+    spMV_data start_node = 0;
+    spMV_data end_node = 0;
 
-    std::map<unsigned long, std::vector<unsigned long> > nodes;
+    std::map<spMV_data, std::vector<spMV_data> > nodes;
 
     for (int i = 0; i < N; i++) {
         start_node = 0;
@@ -279,7 +251,7 @@ void init_problem() {
         
         if (end_node < SEGMENT) {
             if (nodes.find(start_node) == nodes.end()) {
-                nodes.insert(make_pair(start_node, std::vector<unsigned long>()));
+                nodes.insert(make_pair(start_node, std::vector<spMV_data>()));
             }
             if (find(nodes[start_node].begin(), nodes[start_node].end(), end_node) == nodes[start_node].end()) {
                 nodes[start_node].push_back(end_node);
@@ -287,9 +259,9 @@ void init_problem() {
         }
     }
 
-    unsigned long col_iter = 0;
-    // unsigned long row_iter = 1;
-    // unsigned long prev_row = 0;
+    spMV_data col_iter = 0;
+    // spMV_data row_iter = 1;
+    // spMV_data prev_row = 0;
     // dt_ROW[0] = 0;
     for (auto& node : nodes) {
         sort(node.second.begin(), node.second.end(), mySort);
@@ -304,8 +276,8 @@ void init_problem() {
         // row_iter++;
         // prev_row = node.first + 1;
         for (int i = 0; i < node.second.size(); i++) {
-            dt_COL[col_iter] = node.second[i];
-            dt_ROW[col_iter] = node.first;
+            dt_A[col_iter].col = node.second[i];
+            dt_A[col_iter].row = node.first;
             // if (node.first == 0) {
             //     printf("dt_COL[%lu]: %lu\n", col_iter, dt_COL[col_iter]);
             // }
@@ -318,7 +290,7 @@ void init_problem() {
     // }
 
     for (i = 0; i < col_iter; i++) {
-        dt_V[i] = (float) rand() / (RAND_MAX + 1.0);
+        dt_A[i].V = (spMV_float) rand() / (RAND_MAX + 1.0);
     }
 
 	printf("The number of actual non-zero elements in the block is: %lu\n", col_iter);
@@ -332,11 +304,30 @@ void init_problem() {
 
     // Generate the input vector
     for (j = 0; j < N; j++) {
-        dt_x[j] = (((float)(rand()%RANGE))/RANGE);
+        dt_x[j] = (((spMV_float)(rand()%RANGE))/RANGE);
     }
       
 	printf("generating all inputs done\n");
     real_NNZ = col_iter;
+
+    NZR++;
+    for (i = 1; i < real_NNZ; i++) {
+        if (dt_A[i].row != dt_A[i-1].row) {
+            NZR++;
+        }
+    }
+
+    printf("NZR: %lu\n", NZR);
+
+    dt_y = (pack_out*)acl_aligned_malloc(NZR * sizeof(pack_out));
+    ref_output = (spMV_float*)acl_aligned_malloc(NZR * sizeof(spMV_float));
+
+    // Set the actual output and reference output matrices to 0.
+    for(i = 0; i < NZR; i++) {
+        dt_y[i].value = 0;
+        dt_y[i].idx = 0;
+        ref_output[i] = 0;
+    }
 }
 
 void run() {
@@ -345,29 +336,18 @@ void run() {
     // Transfer inputs to each device. Each of the host buffers supplied to
     // clEnqueueWriteBuffer here is already aligned to ensure that DMA is used
     // for the host-to-device transfer.
-    status = clEnqueueWriteBuffer(load_queue, V_buf, CL_TRUE,
-                                    0, NNZ * sizeof(float), dt_V, 0, NULL, NULL);
-    checkError(status, "Failed to transfer V");
-
-	status = clEnqueueWriteBuffer(load_queue, col_buf, CL_TRUE,
-                                    0, NNZ * sizeof(spMV_data), dt_COL, 0, NULL, NULL);
-    checkError(status, "Failed to transfer col");
-
-	status = clEnqueueWriteBuffer(load_queue, row_buf, CL_TRUE,
-                                    0, NNZ * sizeof(spMV_data), dt_ROW, 0, NULL, NULL);
-    checkError(status, "Failed to transfer row");
+    status = clEnqueueWriteBuffer(load_queue, A_buf, CL_TRUE,
+                                    0, NNZ * sizeof(pack_in), dt_A, 0, NULL, NULL);
+    checkError(status, "Failed to transfer A");
+    printf("sizeof packin: %lu\n", sizeof(pack_in));
 
     status = clEnqueueWriteBuffer(load_queue, x_buf, CL_TRUE,
-                                    0, N * sizeof(float), dt_x, 0, NULL, NULL);
+                                    0, N * sizeof(spMV_float), dt_x, 0, NULL, NULL);
     checkError(status, "Failed to transfer x");
 
     status = clEnqueueWriteBuffer(store_queue, y_buf, CL_TRUE,
-                                   0, N * sizeof(float), dt_y, 0, NULL, NULL);
+                                   0, NZR * sizeof(pack_out), dt_y, 0, NULL, NULL);
     checkError(status, "Failed to transfer y");
-
-    status = clEnqueueWriteBuffer(store_queue, y_idx_buf, CL_TRUE,
-                                   0, N * sizeof(spMV_data), dt_y_idx, 0, NULL, NULL);
-    checkError(status, "Failed to transfer y_idx");
 
     // Wait for all queues to finish.
     clFinish(load_queue);
@@ -384,13 +364,7 @@ void run() {
     // Set kernel arguments.
     unsigned argi = 0;
 
-    status = clSetKernelArg(load_kernel, argi++, sizeof(cl_mem), &V_buf);
-    checkError(status, "Failed to set argument %d", argi - 1);
-
-	status = clSetKernelArg(load_kernel, argi++, sizeof(cl_mem), &col_buf);
-    checkError(status, "Failed to set argument %d", argi - 1);
-
-	status = clSetKernelArg(load_kernel, argi++, sizeof(cl_mem), &row_buf);
+    status = clSetKernelArg(load_kernel, argi++, sizeof(cl_mem), &A_buf);
     checkError(status, "Failed to set argument %d", argi - 1);
 
     status = clSetKernelArg(load_kernel, argi++, sizeof(cl_mem), &x_buf);
@@ -409,7 +383,7 @@ void run() {
     status = clSetKernelArg(store_kernel, argi++, sizeof(cl_mem), &y_buf);
     checkError(status, "Failed to set argument %d", argi - 1);
 
-    status = clSetKernelArg(store_kernel, argi++, sizeof(cl_mem), &y_idx_buf);
+    status = clSetKernelArg(store_kernel, argi++, sizeof(spMV_data), &NZR);
     checkError(status, "Failed to set argument %d", argi - 1);
 
     // Enqueue kernel.
@@ -468,14 +442,10 @@ void run() {
 
     // Read the result.
     status = clEnqueueReadBuffer(store_queue, y_buf, CL_TRUE,
-                                    0, N * sizeof(float), dt_y, 0, NULL, NULL);
+                                    0, NZR * sizeof(pack_out), dt_y, 0, NULL, NULL);
     checkError(status, "Failed to read output vector");
 
-    status = clEnqueueReadBuffer(store_queue, y_idx_buf, CL_TRUE,
-                                    0, N * sizeof(spMV_data), dt_y_idx, 0, NULL, NULL);
-    checkError(status, "Failed to read output vector");
-
-    // for (unsigned long i = 0; i < N; i++) {
+    // for (spMV_data i = 0; i < N; i++) {
     //     if (i == 0 || dt_y_idx[i] != 0) {
     //         printf("dt_y_idx[%lu]: %lu\n", i, dt_y_idx[i]);
     //     }   
@@ -483,20 +453,16 @@ void run() {
 
     // printf("First verification\n");
     // Verify results.
-    calc_result(dt_V, dt_x, ref_output);
+    calc_result(dt_A, dt_x, ref_output);
     verify();
 }
 
-void calc_result(float *V, float *x, float *y) {
+void calc_result(pack_in *A, spMV_float *x, spMV_float *y) {
     printf("Computing reference output\n");
-    unsigned long i,j,k;
-    unsigned long row_start, row_end;
+    spMV_data i,j,k;
+    spMV_data row_start, row_end;
 
-	// float* temp_y = (float*)malloc(N * sizeof(float));
-
-    for (int i = 0; i < N; i++) {
-        y[i] = 0;
-    }
+	// spMV_float* temp_y = (spMV_float*)malloc(N * sizeof(spMV_float));
 
     // for (i = 0; i < N; i++) {
 	// 	for (j = 0; j < SEGMENT; j++) {
@@ -506,8 +472,13 @@ void calc_result(float *V, float *x, float *y) {
 	// 	}
 	// }
 
-    for (i = 0; i < real_NNZ; i++) {
-        y[dt_ROW[i]] += V[i] * x[dt_COL[i]];
+    k = 0;
+    y[0] += A[0].V * x[A[0].col];
+    for (i = 1; i < real_NNZ; i++) {
+        if (A[i].row != A[i-1].row) {
+            k++;
+        }
+        y[k] += A[i].V * x[A[i].col];
         // printf("y[%lu] = %f\n", dt_ROW[i], y[dt_ROW[i]]);
     }
 
@@ -522,33 +493,33 @@ void calc_result(float *V, float *x, float *y) {
 void verify() {
     printf("Verifying\n");
 
-    unsigned long i;
+    spMV_data i;
 
-    float y[N];
-    for (i = 0; i < N; i++) {
-        y[i] = 0;
-        // printf("dt_y_idx[%lu]: %lu\n", i, dt_y_idx[i]);
-        // if (i <= 4) {
-        //     printf("dt_y_idx[%lu] = %lu\n", i, dt_y_idx[i]);
-        //     printf("dt_y[%lu] = %f\n", i, dt_y[i]);
-        // }
-    }
-    for (i = 0; i < N; i++) {
-        if (dt_y[i] != -1) {
-            y[dt_y_idx[i]] = dt_y[i];
-            // printf("dt_y_idx[%lu] = %lu\n", i, dt_y_idx[i]);
-            // printf("dt_y[%lu] = %f\n", i, dt_y[i]);
-        }
-        else {
-            break;
-        }
-    }
+    // spMV_float y[N];
+    // for (i = 0; i < N; i++) {
+    //     y[i] = 0;
+    //     // printf("dt_y_idx[%lu]: %lu\n", i, dt_y_idx[i]);
+    //     // if (i <= 4) {
+    //     //     printf("dt_y_idx[%lu] = %lu\n", i, dt_y_idx[i]);
+    //     //     printf("dt_y[%lu] = %f\n", i, dt_y[i]);
+    //     // }
+    // }
+    // for (i = 0; i < N; i++) {
+    //     if (dt_y[i] != -1) {
+    //         y[dt_y_idx[i]] = dt_y[i];
+    //         // printf("dt_y_idx[%lu] = %lu\n", i, dt_y_idx[i]);
+    //         // printf("dt_y[%lu] = %f\n", i, dt_y[i]);
+    //     }
+    //     else {
+    //         break;
+    //     }
+    // }
 
-	for(i = 0; i < N ; i++) {
-		if (!nearlyEqual((float)y[i], ref_output[i])) {
-            printf("y[%lu]: %f, ref_output[%lu]: %f\n", i, y[i], i, ref_output[i]);
+	for(i = 0; i < NZR ; i++) {
+		if (!nearlyEqual((float)dt_y[i].value, (float)ref_output[i])) {
+            printf("y[%lu]: %f, ref_output[%lu]: %f\n", i, dt_y[i].value, i, ref_output[i]);
 		}
-		assert(nearlyEqual((float)y[i], ref_output[i]));
+		assert(nearlyEqual((float)dt_y[i].value, (float)ref_output[i]));
 	}
 
     printf("Results correct.\n\n");
@@ -595,20 +566,11 @@ void cleanup() {
     if(x_buf) {
         clReleaseMemObject(x_buf);
     }
-    if(V_buf) {
-        clReleaseMemObject(V_buf);
-    }
-    if(col_buf) {
-        clReleaseMemObject(col_buf);
-    }
-    if(row_buf) {
-        clReleaseMemObject(row_buf);
+    if(A_buf) {
+        clReleaseMemObject(A_buf);
     }
     if(y_buf) {
         clReleaseMemObject(y_buf);
-    }
-    if(y_idx_buf) {
-        clReleaseMemObject(y_idx_buf);
     }
 
     if(program) {

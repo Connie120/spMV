@@ -25,24 +25,37 @@
 // Block size. Affects the kernel, so if this value changes, the kernel
 // needs to be recompiled.
 #define BLOCK_SIZE (64ul) // default value
-#define SEGMENT (1024ul)
+#define SEGMENT (4ul)
 
-#define BATCH (10)
+#define BATCH (1)
 
 // SCALE and N must have the following relationship: N = 2 ^ SCALE
-#define SCALE (15)
+#define SCALE (4)
 // #define N ((unsigned long)pow(2, SCALE))
-#define N (32768ul)
+#define N (16ul)
 #define DEGREE (3)
 #define NNZ (DEGREE * N)
 // #define ITER (10)
 
-typedef unsigned long spMV_data;
+typedef cl_ulong spMV_data;
+typedef cl_float spMV_float;
 
 #define ARRAY(ptr,i1,i0,d1,d0) (*((ptr)+(i1)*(d0)+(i0)))
 
 #define RANGE (10)
 
 #define EPSILON (1e-4)  // do not change this value
+
+typedef struct pack_in {
+    spMV_data row;
+    spMV_data col;
+    spMV_float V;
+} pack_in;
+
+typedef struct pack_out {
+    spMV_float value;
+    spMV_data idx;
+} pack_out;
+
 #endif
 

@@ -1,16 +1,31 @@
-#include "../host/inc/spMV.h"
+#include "../host/inc/spMV_kernel.h"
 
-#ifndef SIMD_WORK_ITEMS
-#define SIMD_WORK_ITEMS 4 // default value
-#endif
+// #ifndef SIMD_WORK_ITEMS
+// #define SIMD_WORK_ITEMS 4 // default value
+// #endif
+
+typedef ulong spMV_data_kernel;
+typedef float spMV_float_kernel;
+
+typedef struct pack_in_kernel {
+    spMV_data_kernel row;
+    spMV_data_kernel col;
+    spMV_float_kernel V;
+} pack_in_kernel;
+
+typedef struct pack_out_kernel {
+    spMV_float_kernel value;
+    spMV_data_kernel idx;
+} pack_out;
 
 #pragma OPENCL EXTENSION cl_intel_channels : enable
-channel float c0, c1;
+channel struct pack_in_kernel c0;
+channel spMV_float_kernel c0_x;
+channel struct pack_out_kernel c1;
 
-__kernel void load(__global float* restrict V, __global spMV_data* restrict col, __global spMV_data* restrict row, 
-                     __global float* restrict x, const spMV_data real_NNZ) {
-    // printf("kernel load\n");
-    __private float x_seg[SEGMENT];
+__kernel void load(__global struct pack_in_kernel* restrict A, __global spMV_float_kernel* restrict x, const spMV_data_kernel real_NNZ) {
+    printf("kernel load\n");
+    __private spMV_float_kernel x_seg[SEGMENT];
 
     // Stream the first segment of x from DRAM to fast memory
     for (int i = 0; i < SEGMENT; i++) {
@@ -19,108 +34,88 @@ __kernel void load(__global float* restrict V, __global spMV_data* restrict col,
 
     for (int m = 0; m < BATCH; m++) {
         for (int i = 0; i < real_NNZ; i++) {
-            write_channel_intel(c0, row[i]);
-            // printf("kernel write channel c0 row[%d]: %lu\n", i, row[i]);
+            write_channel_intel(c0, A[i]);
+            printf("kernel write channel c0 row[%d]: %lu\n", i, A[i].row);
+            printf("kernel write channel c0 col[%d]: %lu\n", i, A[i].col);
+            printf("kernel write channel c0 V[%d]: %f\n", i, A[i].V);
 
-            write_channel_intel(c0, col[i]);
-            // printf("kernel write channel c0 col[%d]: %lu\n", i, col[i]);
-
-            write_channel_intel(c0, V[i]);
-            // printf("kernel write channel c0 V[%d]: %f\n", i, V[i]);
-
-            write_channel_intel(c0, x_seg[col[i]]);
-            // printf("kernel write channel c0 x_seg[%lu]: %f\n", col[i], x_seg[col[i]]);
+            write_channel_intel(c0_x, x_seg[A[i].col]);
+            printf("kernel write channel c0 x_seg[%lu]: %f\n", A[i].col, x_seg[A[i].col]);
         }
     }
-    // printf("kernel load done.\n");
+    printf("kernel load done.\n");
 }
 
-__kernel void execute(const spMV_data real_NNZ) {
-    // printf("kernel execute\n");
-    spMV_data row_prev, row_curr, col_curr;
-    float x_curr, V_curr;
+__kernel void execute(const spMV_data_kernel real_NNZ) {
+    printf("kernel execute\n");
+    spMV_data_kernel row_prev, row_curr, col_curr;
+    spMV_float_kernel x_curr, V_curr;
+    struct pack_in_kernel A;
+    struct pack_out_kernel y;
 
-    float y_temp = 0.0f;
-
-    spMV_data k = 0;
+    A.row = 0;
+    A.col = 0;
+    A.V = 0.0f;
+    printf("sizeof A: %lu\n", sizeof(pack_in_kernel));
+    y.value = 0.0f;
 
     row_prev = 0;
 
     for (int m = 0; m < BATCH; m++) {
+        row_prev = 0;
+        y.value = 0.0f;
         for (int i = 0; i < real_NNZ; i++) {
-            row_curr = read_channel_intel(c0);
-            // printf("kernel read channel c0 row: %lu\n", row_curr);
+            A = read_channel_intel(c0);
+            printf("kernel read channel c0 row: %lu\n", A.row);
+            printf("kernel read channel c0 col: %lu\n", A.col);
+            printf("kernel read channel c0 V: %f\n", A.V);
 
-            col_curr = read_channel_intel(c0);
-            // printf("kernel read channel c0 col: %lu\n", col_curr);
-
-            V_curr = read_channel_intel(c0);
-            // printf("kernel read channel c0 V: %f\n", V_curr);
-
-            x_curr = read_channel_intel(c0);
-            // printf("kernel read channel c0 x: %f\n", x_curr);
+            x_curr = read_channel_intel(c0_x);
+            printf("kernel read channel c0 x: %f\n", x_curr);
 
             // spMV
-            if (row_prev != row_curr){
-                write_channel_intel(c1, y_temp);
-                // printf("kernel write channel c1 y: %f\n", y_temp);
+            if (row_prev != A.row){
+                y.idx = row_prev;
+                write_channel_intel(c1, y);
+                printf("kernel write channel c1 y: %f\n", y.value);
+                printf("kernel write channel c1 y_idx: %lu\n", y.idx);
 
-                write_channel_intel(c1, row_prev);
-                // printf("kernel write channel c1 row: %lu\n", row_prev);
-
-                k++;
-
-                y_temp = 0.0f;
+                y.value = 0.0f;
             }
-            y_temp += V_curr * x_curr;
+            y.value += A.V * x_curr;
 
-            row_prev = row_curr;
+            row_prev = A.row;
         }
-        write_channel_intel(c1, y_temp);
-        // printf("kernel write channel c1 y: %f\n", y_temp);
+        y.idx = A.row;
+        write_channel_intel(c1, y);
+        printf("kernel write channel c1 y: %f\n", y.value);
+        printf("kernel write channel c1 y_idx: %lu\n", y.idx);
 
-        write_channel_intel(c1, row_prev);
-        // printf("kernel write channel c1 row: %lu\n", row_prev);
-
-        write_channel_intel(c1, -1);
-        // printf("kernel write channel c1 terminate\n");
+        // printf("Number of channel write in execute: %lu\n", k);
     }
-    // printf("kernel execute done.\n");
+    printf("kernel execute done.\n");
 }
 
-__kernel void store(__global float* restrict y, __global spMV_data* restrict y_idx) {
-    // printf("kernel store\n");
+__kernel void store(__global struct pack_out_kernel* restrict y, const spMV_data_kernel NZR) {
+    printf("kernel store\n");
     for (int m = 0; m < BATCH; m++) {
-        // Initialize the output
-        for (int i = 0; i < N; i++) {
-            if (y[i] != 0) {
-                y[i] = 0;
-                y_idx[i] = 0;
-            }
-            else {
-                break;
-            }
-        }
-
-        for (int i = 0; i < N; i++) {
+        for (int i = 0; i < NZR; i++) {
             y[i] = read_channel_intel(c1);
-            // printf("kernel read channel c1 y[%d]: %f\n", i, y[i]);
+            printf("kernel read channel c1 y[%lu]: %f\n", y[i].idx, y[i].value);
 
-            if (y[i] < 0) {
-                // printf("kernel store terminate\n");
-                break;
-            }
-
-            y_idx[i] = read_channel_intel(c1);
+            // if (y[i] < 0) {
+            //     // printf("kernel store terminate\n");
+            //     break;
+            // }
             // printf("kernel read channel c1 y_idx[%d]: %lu\n", i, y_idx[i]);
 
-            if (y_idx[i] == -1) {
-                printf("Error!!!\n");
-                break;
-            }
+            // if (y_idx[i] == -1) {
+            //     printf("Error!!!\n");
+            //     break;
+            // }
         }
     }
-    // printf("kernel store done.\n");
+    printf("kernel store done.\n");
 }
 
 // __kernel void spMV( __global float* restrict V, __global spMV_data* restrict col, __global spMV_data* restrict row, 

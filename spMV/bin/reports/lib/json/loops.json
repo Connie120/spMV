@@ -1,0 +1,1530 @@
+{
+  "columns":
+  ["", "Pipelined", "II", "Speculated iterations", "Details"]
+  , "children":
+  [
+    {
+      "name":"Kernel: execute"
+      , "data":
+      ["", "", ""]
+      , "debug":
+      [
+        [
+          {
+            "filename":"spMV_pipeline.cl"
+            , "line":38
+          }
+        ]
+      ]
+      , "details":
+      [
+        {
+          "type":"brief"
+          , "text":"Single work-item execution"
+        }
+        , {
+          "type":"text"
+          , "text":"Single work-item execution"
+        }
+        , {
+          "type":"text"
+          , "text":"Fmax bottlenck block: None"
+        }
+        , {
+          "type":"text"
+          , "text":"See %L for more information"
+          , "links":
+          [
+            {
+              "guide":"Best Practices Guide : Kernels"
+              , "link":"https://www.intel.com/content/www/us/en/programmable/documentation/mwh1391807516407.html#ipp1476408832230"
+            }
+          ]
+        }
+      ]
+      , "children":
+      [
+        {
+          "name":"execute.B1"
+          , "data":
+          ["Yes", ">=1", "0"]
+          , "debug":
+          [
+            [
+              {
+                "filename":"spMV_pipeline.cl"
+                , "line":49
+              }
+            ]
+          ]
+          , "details":
+          [
+            {
+              "type":"brief"
+              , "text":"Serial exe: Memory dependency"
+            }
+            , {
+              "type":"text"
+              , "text":"Iteration executed serially across execute.B4. Only a single loop iteration will execute inside this region due to memory dependency:"
+              , "details":
+              [
+                {
+                  "type":"text"
+                  , "text":"From: Channel Read Operation (%L)"
+                  , "links":
+                  [
+                    {
+                      "filename":"spMV_pipeline.cl"
+                      , "line":"51"
+                    }
+                  ]
+                }
+                , {
+                  "type":"text"
+                  , "text":"To: Channel Write Operation (%L)"
+                  , "links":
+                  [
+                    {
+                      "filename":"spMV_pipeline.cl"
+                      , "line":"68"
+                    }
+                  ]
+                }
+              ]
+            }
+            , {
+              "type":"text"
+              , "text":"Iteration executed serially across execute.B4. Only a single loop iteration will execute inside this region due to memory dependency:"
+              , "details":
+              [
+                {
+                  "type":"text"
+                  , "text":"From: Channel Write Operation (%L)"
+                  , "links":
+                  [
+                    {
+                      "filename":"spMV_pipeline.cl"
+                      , "line":"65"
+                    }
+                  ]
+                }
+                , {
+                  "type":"text"
+                  , "text":"To: Channel Write Operation (%L)"
+                  , "links":
+                  [
+                    {
+                      "filename":"spMV_pipeline.cl"
+                      , "line":"68"
+                    }
+                  ]
+                }
+              ]
+            }
+            , {
+              "type":"text"
+              , "text":"Iteration executed serially due to memory dependency:"
+              , "details":
+              [
+                {
+                  "type":"text"
+                  , "text":"From: Channel Write Operation (%L)"
+                  , "links":
+                  [
+                    {
+                      "filename":"spMV_pipeline.cl"
+                      , "line":"65"
+                    }
+                  ]
+                }
+                , {
+                  "type":"text"
+                  , "text":"To: Channel Write Operation (%L)"
+                  , "links":
+                  [
+                    {
+                      "filename":"spMV_pipeline.cl"
+                      , "line":"85"
+                    }
+                  ]
+                }
+              ]
+            }
+            , {
+              "type":"text"
+              , "text":"Iteration executed serially across execute.B4. Only a single loop iteration will execute inside this region due to memory dependency:"
+              , "details":
+              [
+                {
+                  "type":"text"
+                  , "text":"From: Channel Write Operation (%L)"
+                  , "links":
+                  [
+                    {
+                      "filename":"spMV_pipeline.cl"
+                      , "line":"79"
+                    }
+                  ]
+                }
+                , {
+                  "type":"text"
+                  , "text":"To: Channel Write Operation (%L)"
+                  , "links":
+                  [
+                    {
+                      "filename":"spMV_pipeline.cl"
+                      , "line":"85"
+                    }
+                  ]
+                }
+              ]
+            }
+            , {
+              "type":"text"
+              , "text":"Hyper-Optimized loop structure: n/a"
+            }
+            , {
+              "type":"text"
+              , "text":"Stallable instruction: n/a"
+            }
+            , {
+              "type":"text"
+              , "text":"Maximum concurrent iterations: Capacity of loop"
+              , "details":
+              [
+                {
+                  "type":"text"
+                  , "text":"Use the %L viewer to estimate capacity"
+                  , "links":
+                  [
+                    {
+                      "view":"Fmax II Report"
+                    }
+                  ]
+                }
+              ]
+            }
+            , {
+              "type":"text"
+              , "text":"See %L for more information"
+              , "links":
+              [
+                {
+                  "guide":"Best Practices Guide : Nested Loops"
+                  , "link":"https://www.intel.com/content/www/us/en/programmable/documentation/mwh1391807516407.html#rfr1469543500580"
+                }
+              ]
+            }
+          ]
+          , "children":
+          [
+            {
+              "name":"execute.B4"
+              , "data":
+              ["Yes", "~12", "1"]
+              , "debug":
+              [
+                [
+                  {
+                    "filename":"spMV_pipeline.cl"
+                    , "line":50
+                  }
+                ]
+              ]
+              , "details":
+              [
+                {
+                  "type":"brief"
+                  , "text":"Memory dependency"
+                }
+                , {
+                  "type":"text"
+                  , "text":"Compiler failed to schedule this loop with smaller II due to memory dependency:"
+                  , "details":
+                  [
+                    {
+                      "type":"text"
+                      , "text":"From: Channel Read Operation (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"51"
+                        }
+                      ]
+                    }
+                    , {
+                      "type":"text"
+                      , "text":"To: Channel Read Operation (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"60"
+                        }
+                      ]
+                    }
+                  ]
+                }
+                , {
+                  "type":"text"
+                  , "text":"Compiler failed to schedule this loop with smaller II due to memory dependency:"
+                  , "details":
+                  [
+                    {
+                      "type":"text"
+                      , "text":"From: Channel Write Operation (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"65"
+                        }
+                      ]
+                    }
+                    , {
+                      "type":"text"
+                      , "text":"To: Channel Write Operation (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"68"
+                        }
+                      ]
+                    }
+                  ]
+                }
+                , {
+                  "type":"text"
+                  , "text":"Compiler failed to schedule this loop with smaller II due to data dependency on variable(s):"
+                  , "details":
+                  [
+                    {
+                      "type":"text"
+                      , "text":"row_curr (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"Unknown location"
+                          , "line":"0"
+                        }
+                      ]
+                    }
+                    , {
+                      "type":"text"
+                      , "text":"row_prev (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"40"
+                        }
+                      ]
+                    }
+                  ]
+                }
+                , {
+                  "type":"text"
+                  , "text":"Most critical loop feedback path during scheduling:"
+                  , "details":
+                  [
+                    {
+                      "type":"text"
+                      , "text":"5.00 clock cycles 'Convert 64-bit Unsigned Integer to Floating-point' Function Call Operation (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"68"
+                        }
+                      ]
+                    }
+                  ]
+                }
+                , {
+                  "type":"text"
+                  , "text":"Compiler failed to schedule this loop with smaller II due to data dependency on variable(s):"
+                  , "details":
+                  [
+                    {
+                      "type":"text"
+                      , "text":"row_curr (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"Unknown location"
+                          , "line":"0"
+                        }
+                      ]
+                    }
+                    , {
+                      "type":"text"
+                      , "text":"row_prev (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"40"
+                        }
+                      ]
+                    }
+                  ]
+                }
+                , {
+                  "type":"text"
+                  , "text":"Most critical loop feedback path during scheduling:"
+                  , "details":
+                  [
+                    {
+                      "type":"text"
+                      , "text":"5.00 clock cycles 'Convert 64-bit Unsigned Integer to Floating-point' Function Call Operation (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"68"
+                        }
+                      ]
+                    }
+                  ]
+                }
+                , {
+                  "type":"text"
+                  , "text":"Hyper-Optimized loop structure: n/a"
+                }
+                , {
+                  "type":"text"
+                  , "text":"II is an approximation due to the following stallable instructions:"
+                  , "details":
+                  [
+                    {
+                      "type":"text"
+                      , "text":"Channel Read Operation (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"51"
+                        }
+                      ]
+                    }
+                    , {
+                      "type":"text"
+                      , "text":"Channel Write Operation (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"65"
+                        }
+                      ]
+                    }
+                    , {
+                      "type":"text"
+                      , "text":"Channel Read Operation (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"54"
+                        }
+                      ]
+                    }
+                    , {
+                      "type":"text"
+                      , "text":"Channel Write Operation (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"68"
+                        }
+                      ]
+                    }
+                    , {
+                      "type":"text"
+                      , "text":"Channel Read Operation (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"57"
+                        }
+                      ]
+                    }
+                    , {
+                      "type":"text"
+                      , "text":"Channel Read Operation (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"60"
+                        }
+                      ]
+                    }
+                  ]
+                }
+                , {
+                  "type":"text"
+                  , "text":"Maximum concurrent iterations: Capacity of loop"
+                  , "details":
+                  [
+                    {
+                      "type":"text"
+                      , "text":"Use the %L viewer to estimate capacity"
+                      , "links":
+                      [
+                        {
+                          "view":"Fmax II Report"
+                        }
+                      ]
+                    }
+                  ]
+                }
+                , {
+                  "type":"text"
+                  , "text":"See %L for more information"
+                  , "links":
+                  [
+                    {
+                      "guide":"Best Practices Guide : Loops in a Single Work-Item Kernel"
+                      , "link":"https://www.intel.com/content/www/us/en/programmable/documentation/mwh1391807516407.html#wfa1476380079940"
+                    }
+                  ]
+                }
+              ]
+              , "children":
+              [
+              ]
+            }
+          ]
+        }
+      ]
+    }
+    , {
+      "name":"Kernel: load"
+      , "data":
+      ["", "", ""]
+      , "debug":
+      [
+        [
+          {
+            "filename":"spMV_pipeline.cl"
+            , "line":10
+          }
+        ]
+      ]
+      , "details":
+      [
+        {
+          "type":"brief"
+          , "text":"Single work-item execution"
+        }
+        , {
+          "type":"text"
+          , "text":"Single work-item execution"
+        }
+        , {
+          "type":"text"
+          , "text":"Fmax bottlenck block: None"
+        }
+        , {
+          "type":"text"
+          , "text":"See %L for more information"
+          , "links":
+          [
+            {
+              "guide":"Best Practices Guide : Kernels"
+              , "link":"https://www.intel.com/content/www/us/en/programmable/documentation/mwh1391807516407.html#ipp1476408832230"
+            }
+          ]
+        }
+      ]
+      , "children":
+      [
+        {
+          "name":"load.B2"
+          , "data":
+          ["Yes", "~1", "3"]
+          , "debug":
+          [
+            [
+              {
+                "filename":"spMV_pipeline.cl"
+                , "line":16
+              }
+            ]
+          ]
+          , "details":
+          [
+            {
+              "type":"brief"
+              , "text":" "
+            }
+            , {
+              "type":"text"
+              , "text":"Hyper-Optimized loop structure: n/a"
+            }
+            , {
+              "type":"text"
+              , "text":"II is an approximation due to the following stallable instruction:"
+              , "details":
+              [
+                {
+                  "type":"text"
+                  , "text":"Load Operation (%L)"
+                  , "links":
+                  [
+                    {
+                      "filename":"spMV_pipeline.cl"
+                      , "line":"17"
+                    }
+                  ]
+                }
+              ]
+            }
+            , {
+              "type":"text"
+              , "text":"Maximum concurrent iterations: Capacity of loop"
+              , "details":
+              [
+                {
+                  "type":"text"
+                  , "text":"Use the %L viewer to estimate capacity"
+                  , "links":
+                  [
+                    {
+                      "view":"Fmax II Report"
+                    }
+                  ]
+                }
+              ]
+            }
+            , {
+              "type":"text"
+              , "text":"See %L for more information"
+              , "links":
+              [
+                {
+                  "guide":"Best Practices Guide : Loops in a Single Work-Item Kernel"
+                  , "link":"https://www.intel.com/content/www/us/en/programmable/documentation/mwh1391807516407.html#wfa1476380079940"
+                }
+              ]
+            }
+          ]
+          , "children":
+          [
+          ]
+        }
+        , {
+          "name":"load.B3"
+          , "data":
+          ["Yes", ">=1", "0"]
+          , "debug":
+          [
+            [
+              {
+                "filename":"spMV_pipeline.cl"
+                , "line":20
+              }
+            ]
+          ]
+          , "details":
+          [
+            {
+              "type":"brief"
+              , "text":"Serial exe: Memory dependency"
+            }
+            , {
+              "type":"text"
+              , "text":"Iteration executed serially across load.B6. Only a single loop iteration will execute inside this region due to memory dependency:"
+              , "details":
+              [
+                {
+                  "type":"text"
+                  , "text":"From: Channel Write Operation (%L)"
+                  , "links":
+                  [
+                    {
+                      "filename":"spMV_pipeline.cl"
+                      , "line":"22"
+                    }
+                  ]
+                }
+                , {
+                  "type":"text"
+                  , "text":"To: Channel Write Operation (%L)"
+                  , "links":
+                  [
+                    {
+                      "filename":"spMV_pipeline.cl"
+                      , "line":"31"
+                    }
+                  ]
+                }
+              ]
+            }
+            , {
+              "type":"text"
+              , "text":"Hyper-Optimized loop structure: n/a"
+            }
+            , {
+              "type":"text"
+              , "text":"Stallable instruction: n/a"
+            }
+            , {
+              "type":"text"
+              , "text":"Maximum concurrent iterations: Capacity of loop"
+              , "details":
+              [
+                {
+                  "type":"text"
+                  , "text":"Use the %L viewer to estimate capacity"
+                  , "links":
+                  [
+                    {
+                      "view":"Fmax II Report"
+                    }
+                  ]
+                }
+              ]
+            }
+            , {
+              "type":"text"
+              , "text":"See %L for more information"
+              , "links":
+              [
+                {
+                  "guide":"Best Practices Guide : Nested Loops"
+                  , "link":"https://www.intel.com/content/www/us/en/programmable/documentation/mwh1391807516407.html#rfr1469543500580"
+                }
+              ]
+            }
+          ]
+          , "children":
+          [
+            {
+              "name":"load.B6"
+              , "data":
+              ["Yes", "~5", "1"]
+              , "debug":
+              [
+                [
+                  {
+                    "filename":"spMV_pipeline.cl"
+                    , "line":21
+                  }
+                ]
+              ]
+              , "details":
+              [
+                {
+                  "type":"brief"
+                  , "text":"Memory dependency"
+                }
+                , {
+                  "type":"text"
+                  , "text":"Compiler failed to schedule this loop with smaller II due to memory dependency:"
+                  , "details":
+                  [
+                    {
+                      "type":"text"
+                      , "text":"From: Channel Write Operation (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"22"
+                        }
+                      ]
+                    }
+                    , {
+                      "type":"text"
+                      , "text":"To: Channel Write Operation (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"31"
+                        }
+                      ]
+                    }
+                  ]
+                }
+                , {
+                  "type":"text"
+                  , "text":"Most critical loop feedback path during scheduling:"
+                  , "details":
+                  [
+                    {
+                      "type":"text"
+                      , "text":"0.28 clock cycles 1-bit Or Operation (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"31"
+                        }
+                      ]
+                    }
+                  ]
+                }
+                , {
+                  "type":"text"
+                  , "text":"Hyper-Optimized loop structure: n/a"
+                }
+                , {
+                  "type":"text"
+                  , "text":"II is an approximation due to the following stallable instructions:"
+                  , "details":
+                  [
+                    {
+                      "type":"text"
+                      , "text":"Load Operation (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"22"
+                        }
+                      ]
+                    }
+                    , {
+                      "type":"text"
+                      , "text":"Load Operation (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"25"
+                        }
+                      ]
+                    }
+                    , {
+                      "type":"text"
+                      , "text":"Load Operation (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"28"
+                        }
+                      ]
+                    }
+                    , {
+                      "type":"text"
+                      , "text":"Channel Write Operation (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"22"
+                        }
+                      ]
+                    }
+                    , {
+                      "type":"text"
+                      , "text":"Channel Write Operation (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"25"
+                        }
+                      ]
+                    }
+                    , {
+                      "type":"text"
+                      , "text":"Channel Write Operation (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"28"
+                        }
+                      ]
+                    }
+                    , {
+                      "type":"text"
+                      , "text":"Channel Write Operation (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"31"
+                        }
+                      ]
+                    }
+                  ]
+                }
+                , {
+                  "type":"text"
+                  , "text":"Maximum concurrent iterations: Capacity of loop"
+                  , "details":
+                  [
+                    {
+                      "type":"text"
+                      , "text":"Use the %L viewer to estimate capacity"
+                      , "links":
+                      [
+                        {
+                          "view":"Fmax II Report"
+                        }
+                      ]
+                    }
+                  ]
+                }
+                , {
+                  "type":"text"
+                  , "text":"See %L for more information"
+                  , "links":
+                  [
+                    {
+                      "guide":"Best Practices Guide : Loops in a Single Work-Item Kernel"
+                      , "link":"https://www.intel.com/content/www/us/en/programmable/documentation/mwh1391807516407.html#wfa1476380079940"
+                    }
+                  ]
+                }
+              ]
+              , "children":
+              [
+              ]
+            }
+          ]
+        }
+      ]
+    }
+    , {
+      "name":"Kernel: store"
+      , "data":
+      ["", "", ""]
+      , "debug":
+      [
+        [
+          {
+            "filename":"spMV_pipeline.cl"
+            , "line":91
+          }
+        ]
+      ]
+      , "details":
+      [
+        {
+          "type":"brief"
+          , "text":"Single work-item execution"
+        }
+        , {
+          "type":"text"
+          , "text":"Single work-item execution"
+        }
+        , {
+          "type":"text"
+          , "text":"Fmax bottlenck block: None"
+        }
+        , {
+          "type":"text"
+          , "text":"See %L for more information"
+          , "links":
+          [
+            {
+              "guide":"Best Practices Guide : Kernels"
+              , "link":"https://www.intel.com/content/www/us/en/programmable/documentation/mwh1391807516407.html#ipp1476408832230"
+            }
+          ]
+        }
+      ]
+      , "children":
+      [
+        {
+          "name":"store.B1"
+          , "data":
+          ["Yes", ">=1", "0"]
+          , "debug":
+          [
+            [
+              {
+                "filename":"spMV_pipeline.cl"
+                , "line":93
+              }
+            ]
+          ]
+          , "details":
+          [
+            {
+              "type":"brief"
+              , "text":"Serial exe: Memory dependency"
+            }
+            , {
+              "type":"text"
+              , "text":"Iteration executed serially across store.B3. Only a single loop iteration will execute inside this region due to memory dependency:"
+              , "details":
+              [
+                {
+                  "type":"text"
+                  , "text":"From: Load Operation (%L)"
+                  , "links":
+                  [
+                    {
+                      "filename":"spMV_pipeline.cl"
+                      , "line":"96"
+                    }
+                  ]
+                }
+                , {
+                  "type":"text"
+                  , "text":"To: Store Operation (%L)"
+                  , "links":
+                  [
+                    {
+                      "filename":"spMV_pipeline.cl"
+                      , "line":"97"
+                    }
+                  ]
+                }
+              ]
+            }
+            , {
+              "type":"text"
+              , "text":"Iteration executed serially across store.B3, store.B4. Only a single loop iteration will execute inside this region due to memory dependency:"
+              , "details":
+              [
+                {
+                  "type":"text"
+                  , "text":"From: Load Operation (%L)"
+                  , "links":
+                  [
+                    {
+                      "filename":"spMV_pipeline.cl"
+                      , "line":"96"
+                    }
+                  ]
+                }
+                , {
+                  "type":"text"
+                  , "text":"To: Store Operation (%L)"
+                  , "links":
+                  [
+                    {
+                      "filename":"spMV_pipeline.cl"
+                      , "line":"106"
+                    }
+                  ]
+                }
+              ]
+            }
+            , {
+              "type":"text"
+              , "text":"Iteration executed serially across store.B3, store.B4. Only a single loop iteration will execute inside this region due to memory dependency:"
+              , "details":
+              [
+                {
+                  "type":"text"
+                  , "text":"From: Store Operation (%L)"
+                  , "links":
+                  [
+                    {
+                      "filename":"spMV_pipeline.cl"
+                      , "line":"97"
+                    }
+                  ]
+                }
+                , {
+                  "type":"text"
+                  , "text":"To: Store Operation (%L)"
+                  , "links":
+                  [
+                    {
+                      "filename":"spMV_pipeline.cl"
+                      , "line":"106"
+                    }
+                  ]
+                }
+              ]
+            }
+            , {
+              "type":"text"
+              , "text":"Iteration executed serially across store.B3, store.B4. Only a single loop iteration will execute inside this region due to memory dependency:"
+              , "details":
+              [
+                {
+                  "type":"text"
+                  , "text":"From: Store Operation (%L)"
+                  , "links":
+                  [
+                    {
+                      "filename":"spMV_pipeline.cl"
+                      , "line":"98"
+                    }
+                  ]
+                }
+                , {
+                  "type":"text"
+                  , "text":"To: Store Operation (%L)"
+                  , "links":
+                  [
+                    {
+                      "filename":"spMV_pipeline.cl"
+                      , "line":"106"
+                    }
+                  ]
+                }
+              ]
+            }
+            , {
+              "type":"text"
+              , "text":"Iteration executed serially across store.B4. Only a single loop iteration will execute inside this region due to memory dependency:"
+              , "details":
+              [
+                {
+                  "type":"text"
+                  , "text":"From: Channel Read Operation (%L)"
+                  , "links":
+                  [
+                    {
+                      "filename":"spMV_pipeline.cl"
+                      , "line":"106"
+                    }
+                  ]
+                }
+                , {
+                  "type":"text"
+                  , "text":"To: Channel Read Operation (%L)"
+                  , "links":
+                  [
+                    {
+                      "filename":"spMV_pipeline.cl"
+                      , "line":"114"
+                    }
+                  ]
+                }
+              ]
+            }
+            , {
+              "type":"text"
+              , "text":"Hyper-Optimized loop structure: n/a"
+            }
+            , {
+              "type":"text"
+              , "text":"Stallable instruction: n/a"
+            }
+            , {
+              "type":"text"
+              , "text":"Maximum concurrent iterations: Capacity of loop"
+              , "details":
+              [
+                {
+                  "type":"text"
+                  , "text":"Use the %L viewer to estimate capacity"
+                  , "links":
+                  [
+                    {
+                      "view":"Fmax II Report"
+                    }
+                  ]
+                }
+              ]
+            }
+            , {
+              "type":"text"
+              , "text":"See %L for more information"
+              , "links":
+              [
+                {
+                  "guide":"Best Practices Guide : Nested Loops"
+                  , "link":"https://www.intel.com/content/www/us/en/programmable/documentation/mwh1391807516407.html#rfr1469543500580"
+                }
+              ]
+            }
+          ]
+          , "children":
+          [
+            {
+              "name":"store.B3"
+              , "data":
+              ["Yes", "~134", "16"]
+              , "debug":
+              [
+                [
+                  {
+                    "filename":"spMV_pipeline.cl"
+                    , "line":95
+                  }
+                ]
+              ]
+              , "details":
+              [
+                {
+                  "type":"brief"
+                  , "text":"Data dependency"
+                }
+                , {
+                  "type":"text"
+                  , "text":"Most critical loop feedback path during scheduling:"
+                  , "details":
+                  [
+                    {
+                      "type":"text"
+                      , "text":"129.00 clock cycles Load Operation (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"96"
+                        }
+                      ]
+                    }
+                    , {
+                      "type":"text"
+                      , "text":"1.00 clock cycle 17-bit Select Operation (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"95"
+                        }
+                      ]
+                    }
+                    , {
+                      "type":"text"
+                      , "text":"0.84 clock cycles 32-bit Floating-point Compare Operation (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"96"
+                        }
+                      ]
+                    }
+                    , {
+                      "type":"text"
+                      , "text":"0.28 clock cycles 1-bit And Operation (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"95"
+                        }
+                      ]
+                    }
+                  ]
+                }
+                , {
+                  "type":"text"
+                  , "text":"Hyper-Optimized loop structure: n/a"
+                }
+                , {
+                  "type":"text"
+                  , "text":"II is an approximation due to the following stallable instructions:"
+                  , "details":
+                  [
+                    {
+                      "type":"text"
+                      , "text":"Load Operation (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"96"
+                        }
+                      ]
+                    }
+                    , {
+                      "type":"text"
+                      , "text":"Store Operation (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"97"
+                        }
+                      ]
+                    }
+                    , {
+                      "type":"text"
+                      , "text":"Store Operation (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"98"
+                        }
+                      ]
+                    }
+                  ]
+                }
+                , {
+                  "type":"text"
+                  , "text":"Maximum concurrent iterations: Capacity of loop"
+                  , "details":
+                  [
+                    {
+                      "type":"text"
+                      , "text":"Use the %L viewer to estimate capacity"
+                      , "links":
+                      [
+                        {
+                          "view":"Fmax II Report"
+                        }
+                      ]
+                    }
+                  ]
+                }
+                , {
+                  "type":"text"
+                  , "text":"See %L for more information"
+                  , "links":
+                  [
+                    {
+                      "guide":"Best Practices Guide : Loops in a Single Work-Item Kernel"
+                      , "link":"https://www.intel.com/content/www/us/en/programmable/documentation/mwh1391807516407.html#wfa1476380079940"
+                    }
+                  ]
+                }
+              ]
+              , "children":
+              [
+              ]
+            }
+            , {
+              "name":"store.B4"
+              , "data":
+              ["Yes", "~15", "11"]
+              , "debug":
+              [
+                [
+                  {
+                    "filename":"spMV_pipeline.cl"
+                    , "line":105
+                  }
+                ]
+              ]
+              , "details":
+              [
+                {
+                  "type":"brief"
+                  , "text":"Memory dependency"
+                }
+                , {
+                  "type":"text"
+                  , "text":"Compiler failed to schedule this loop with smaller II due to memory dependency:"
+                  , "details":
+                  [
+                    {
+                      "type":"text"
+                      , "text":"From: Channel Read Operation (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"106"
+                        }
+                      ]
+                    }
+                    , {
+                      "type":"text"
+                      , "text":"To: Channel Read Operation (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"114"
+                        }
+                      ]
+                    }
+                  ]
+                }
+                , {
+                  "type":"text"
+                  , "text":"Most critical loop feedback path during scheduling:"
+                  , "details":
+                  [
+                    {
+                      "type":"text"
+                      , "text":"5.00 clock cycles 'Convert Floating-point to 64-bit Unsigned Integer' Function Call Operation (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"114"
+                        }
+                      ]
+                    }
+                    , {
+                      "type":"text"
+                      , "text":"1.00 clock cycle Channel Read Operation (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"106"
+                        }
+                      ]
+                    }
+                    , {
+                      "type":"text"
+                      , "text":"1.00 clock cycle Channel Read Operation (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"114"
+                        }
+                      ]
+                    }
+                    , {
+                      "type":"text"
+                      , "text":"0.84 clock cycles 64-bit Integer Compare Operation (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"117"
+                        }
+                      ]
+                    }
+                    , {
+                      "type":"text"
+                      , "text":"0.56 clock cycles 32-bit Floating-point Compare Operation (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"109"
+                        }
+                      ]
+                    }
+                    , {
+                      "type":"text"
+                      , "text":"0.28 clock cycles 1-bit Or Operation (%L, %L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"105"
+                        }
+                        , {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"109"
+                        }
+                      ]
+                    }
+                    , {
+                      "type":"text"
+                      , "text":"0.28 clock cycles 1-bit And Operation (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"105"
+                        }
+                      ]
+                    }
+                    , {
+                      "type":"text"
+                      , "text":"0.28 clock cycles 1-bit And Operation (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"105"
+                        }
+                      ]
+                    }
+                  ]
+                }
+                , {
+                  "type":"text"
+                  , "text":"Hyper-Optimized loop structure: n/a"
+                }
+                , {
+                  "type":"text"
+                  , "text":"II is an approximation due to the following stallable instructions:"
+                  , "details":
+                  [
+                    {
+                      "type":"text"
+                      , "text":"Channel Read Operation (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"106"
+                        }
+                      ]
+                    }
+                    , {
+                      "type":"text"
+                      , "text":"Channel Read Operation (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"114"
+                        }
+                      ]
+                    }
+                    , {
+                      "type":"text"
+                      , "text":"Store Operation (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"106"
+                        }
+                      ]
+                    }
+                    , {
+                      "type":"text"
+                      , "text":"Store Operation (%L)"
+                      , "links":
+                      [
+                        {
+                          "filename":"spMV_pipeline.cl"
+                          , "line":"114"
+                        }
+                      ]
+                    }
+                  ]
+                }
+                , {
+                  "type":"text"
+                  , "text":"Maximum concurrent iterations: Capacity of loop"
+                  , "details":
+                  [
+                    {
+                      "type":"text"
+                      , "text":"Use the %L viewer to estimate capacity"
+                      , "links":
+                      [
+                        {
+                          "view":"Fmax II Report"
+                        }
+                      ]
+                    }
+                  ]
+                }
+                , {
+                  "type":"text"
+                  , "text":"See %L for more information"
+                  , "links":
+                  [
+                    {
+                      "guide":"Best Practices Guide : Loops in a Single Work-Item Kernel"
+                      , "link":"https://www.intel.com/content/www/us/en/programmable/documentation/mwh1391807516407.html#wfa1476380079940"
+                    }
+                  ]
+                }
+              ]
+              , "children":
+              [
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
