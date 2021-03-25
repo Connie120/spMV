@@ -42,12 +42,14 @@ cl_kernel store_kernel;
 
 cl_mem A_buf;
 cl_mem x_buf;
+cl_mem test_buf;
 cl_mem y_buf;
 cl_mem y_idx_buf;
 
 spMV_float* dt_x = (spMV_float*)acl_aligned_malloc(N * sizeof(spMV_float));
 pack_out* dt_y;
 pack_in* dt_A = (pack_in*)acl_aligned_malloc(NNZ * sizeof(pack_in));
+float* test_arr = (float*)acl_aligned_malloc(NNZ * sizeof(float));
 
 spMV_float* ref_output;
 
@@ -141,20 +143,20 @@ bool init_opencl() {
     load_queue = clCreateCommandQueue(context, device[0], CL_QUEUE_PROFILING_ENABLE, &status);
     checkError(status, "Failed to create load command queue");
 
-    // exec_queue = clCreateCommandQueue(context, device[0], CL_QUEUE_PROFILING_ENABLE, &status);
-    // checkError(status, "Failed to create execute command queue");
+    exec_queue = clCreateCommandQueue(context, device[0], CL_QUEUE_PROFILING_ENABLE, &status);
+    checkError(status, "Failed to create execute command queue");
 
-    // store_queue = clCreateCommandQueue(context, device[0], CL_QUEUE_PROFILING_ENABLE, &status);
-    // checkError(status, "Failed to create store command queue");
+    store_queue = clCreateCommandQueue(context, device[0], CL_QUEUE_PROFILING_ENABLE, &status);
+    checkError(status, "Failed to create store command queue");
 
     // Kernel.
     const char *load_kernel_name = "load";
     load_kernel = clCreateKernel(program, load_kernel_name, &status);
     checkError(status, "Failed to create load kernel");
 
-    // const char *exec_kernel_name = "execute";
-    // exec_kernel = clCreateKernel(program, exec_kernel_name, &status);
-    // checkError(status, "Failed to create execute kernel");
+    const char *exec_kernel_name = "execute";
+    exec_kernel = clCreateKernel(program, exec_kernel_name, &status);
+    checkError(status, "Failed to create execute kernel");
 
     // const char *store_kernel_name = "store";
     // store_kernel = clCreateKernel(program, store_kernel_name, &status);
@@ -170,6 +172,10 @@ bool init_opencl() {
     A_buf = clCreateBuffer(context, CL_MEM_READ_ONLY, NNZ * sizeof(pack_in), NULL, &status);
     checkError(status, "Failed to create buffer for A");
 	printf("A buffer done\n");
+
+    test_buf = clCreateBuffer(context, CL_MEM_READ_ONLY, NNZ * sizeof(float), NULL, &status);
+    checkError(status, "Failed to create buffer for test_arr");
+	printf("Test buffer done\n");
 
     // Output buffer.
     y_buf = clCreateBuffer(context, CL_MEM_WRITE_ONLY,
@@ -239,7 +245,7 @@ void init_problem() {
 
     std::map<spMV_data, std::vector<spMV_data> > nodes;
 
-    for (int i = 0; i < N; i++) {
+    for (int i = 0; i < NNZ; i++) {
         start_node = 0;
         end_node = 0;
         for (int ib = 0; ib < SCALE; ib++) {
@@ -293,14 +299,7 @@ void init_problem() {
         dt_A[i].V = (spMV_float) rand() / (RAND_MAX + 1.0);
     }
 
-	printf("The number of actual non-zero elements in the block is: %lu\n", col_iter);
-
-    // for (i = 0; i < N * N; i++) {
-    //     if (dt_A[i] != 0) {
-    //         temp++;
-    //     }
-    // }
-    // printf("The number of actual non-zero elements in the matrix is: %lu\n", temp);
+	printf("The number of actual non-zero elements in the block is: %u\n", col_iter);
 
     // Generate the input vector
     for (j = 0; j < N; j++) {
@@ -317,7 +316,7 @@ void init_problem() {
         }
     }
 
-    printf("NZR: %lu\n", NZR);
+    printf("NZR: %u\n", NZR);
 
     dt_y = (pack_out*)acl_aligned_malloc(NZR * sizeof(pack_out));
     ref_output = (spMV_float*)acl_aligned_malloc(NZR * sizeof(spMV_float));
@@ -327,6 +326,10 @@ void init_problem() {
         dt_y[i].value = 0;
         dt_y[i].idx = 0;
         ref_output[i] = 0;
+    }
+
+    for (i = 0; i < real_NNZ; i++) {
+        test_arr[i] = (((spMV_float)(rand()%RANGE))/RANGE);
     }
 }
 
@@ -340,9 +343,13 @@ void run() {
                                     0, NNZ * sizeof(pack_in), dt_A, 0, NULL, NULL);
     checkError(status, "Failed to transfer A");
 
-    // status = clEnqueueWriteBuffer(exec_queue, x_buf, CL_TRUE,
-    //                                 0, N * sizeof(spMV_float), dt_x, 0, NULL, NULL);
-    // checkError(status, "Failed to transfer x");
+    // status = clEnqueueWriteBuffer(load_queue, test_buf, CL_TRUE,
+    //                                 0, NNZ * sizeof(float), test_arr, 0, NULL, NULL);
+    // checkError(status, "Failed to transfer test_arr");
+
+    status = clEnqueueWriteBuffer(exec_queue, x_buf, CL_TRUE,
+                                    0, N * sizeof(spMV_float), dt_x, 0, NULL, NULL);
+    checkError(status, "Failed to transfer x");
 
     // status = clEnqueueWriteBuffer(store_queue, y_buf, CL_TRUE,
     //                                0, NZR * sizeof(pack_out), dt_y, 0, NULL, NULL);
@@ -350,40 +357,40 @@ void run() {
 
     // Wait for all queues to finish.
     clFinish(load_queue);
-    // clFinish(exec_queue);
+    clFinish(exec_queue);
     // clFinish(store_queue);
 
     // Launch kernels.
     // This is the portion of time that we'll be measuring for throughput
     // benchmarking.
     cl_event kernel_event_load;
-    // cl_event kernel_event_exec;
-    // cl_event kernel_event_store;
+    cl_event kernel_event_exec;
+    cl_event kernel_event_store;
 
     const double start_time = getCurrentTimestamp();
     // Set kernel arguments.
     unsigned argi = 0;
 
-    status = clSetKernelArg(load_kernel, argi++, sizeof(cl_mem), &A_buf);
+    status = clSetKernelArg(load_kernel, argi++, sizeof(cl_mem), &test_buf);
     checkError(status, "Failed to set argument %d", argi - 1);
 
     status = clSetKernelArg(load_kernel, argi++, sizeof(spMV_data), &real_NNZ);
     checkError(status, "Failed to set argument %d", argi - 1);
 
-    // argi = 0;
+    argi = 0;
 
-    // status = clSetKernelArg(exec_kernel, argi++, sizeof(cl_mem), &x_buf);
-    // checkError(status, "Failed to set argument %d", argi - 1);
+    status = clSetKernelArg(exec_kernel, argi++, sizeof(cl_mem), &x_buf);
+    checkError(status, "Failed to set argument %d", argi - 1);
 
-    // status = clSetKernelArg(exec_kernel, argi++, sizeof(spMV_data), &real_NNZ);
-    // checkError(status, "Failed to set argument %d", argi - 1);
+    status = clSetKernelArg(exec_kernel, argi++, sizeof(spMV_data), &real_NNZ);
+    checkError(status, "Failed to set argument %d", argi - 1);
 
     // argi = 0;
 
     // status = clSetKernelArg(store_kernel, argi++, sizeof(cl_mem), &y_buf);
     // checkError(status, "Failed to set argument %d", argi - 1);
 
-    // status = clSetKernelArg(store_kernel, argi++, sizeof(spMV_data), &real_NNZ);
+    // status = clSetKernelArg(store_kernel, argi++, sizeof(spMV_data), &NZR);
     // checkError(status, "Failed to set argument %d", argi - 1);
 
     // Enqueue kernel.
@@ -396,9 +403,9 @@ void run() {
                                     global_work_size, NULL, 0, NULL, &kernel_event_load);
     checkError(status, "Failed to launch load kernel");
 
-    // status = clEnqueueNDRangeKernel(exec_queue, exec_kernel, 1, NULL,
-    //                                 global_work_size, NULL, 0, NULL, &kernel_event_exec);
-    // checkError(status, "Failed to launch load kernel");
+    status = clEnqueueNDRangeKernel(exec_queue, exec_kernel, 1, NULL,
+                                    global_work_size, NULL, 0, NULL, &kernel_event_exec);
+    checkError(status, "Failed to launch load kernel");
 
     // status = clEnqueueNDRangeKernel(store_queue, store_kernel, 1, NULL,
     //                                 global_work_size, NULL, 0, NULL, &kernel_event_store);
@@ -408,7 +415,7 @@ void run() {
 
     // Wait for all kernels to finish.
     clWaitForEvents(num_devices, &kernel_event_load);
-    // clWaitForEvents(num_devices, &kernel_event_exec);
+    clWaitForEvents(num_devices, &kernel_event_exec);
     // clWaitForEvents(num_devices, &kernel_event_store);
 
     const double end_time = getCurrentTimestamp();
@@ -420,13 +427,18 @@ void run() {
     // Get kernel times using the OpenCL event profiling API.
     cl_ulong load_time_ns = getStartEndTime(kernel_event_load);
     printf("Kernel time (device %d): %0.3f ms\n", 1, double(load_time_ns) * 1e-6);
-    printf("Loading bandwidth: %f GB/s\n", BATCH * (24 * real_NNZ) / double(load_time_ns));
 
-    // cl_ulong exec_time_ns = getStartEndTime(kernel_event_exec);
-    // printf("Kernel time (device %d): %0.3f ms\n", 1, double(exec_time_ns) * 1e-6);
+    cl_ulong exec_time_ns = getStartEndTime(kernel_event_exec);
+    printf("Kernel time (device %d): %0.3f ms\n", 1, double(exec_time_ns) * 1e-6);
 
     // cl_ulong store_time_ns = getStartEndTime(kernel_event_store);
     // printf("Kernel time (device %d): %0.3f ms\n", 1, double(store_time_ns) * 1e-6);
+    double max_time_ns = double(load_time_ns) > double(exec_time_ns) ? load_time_ns : exec_time_ns;
+    printf("Loading bandwidth: %f GB/s\n", BATCH * (sizeof(pack_in) * real_NNZ) / double(max_time_ns));
+
+    // cl_ulong store_time_ns = getStartEndTime(kernel_event_store);
+    // printf("Kernel time (device %d): %0.3f ms\n", 1, double(store_time_ns) * 1e-6);
+    // printf("Storing bandwidth: %f GB/s\n", BATCH * (sizeof(pack_out) * NZR) / double(store_time_ns));
 
     // TODO: Compute the throughput (GFLOPS).
     // double max_time_ns = double(load_time_ns) > double(exec_time_ns) ? load_time_ns : exec_time_ns;
@@ -518,7 +530,7 @@ void verify() {
 
 	for(i = 0; i < NZR ; i++) {
 		if (!nearlyEqual((float)dt_y[i].value, (float)ref_output[i])) {
-            printf("y[%lu]: %f, ref_output[%lu]: %f\n", i, dt_y[i].value, i, ref_output[i]);
+            printf("y[%u]: %f, ref_output[%u]: %f\n", i, dt_y[i].value, i, ref_output[i]);
 		}
 		assert(nearlyEqual((float)dt_y[i].value, (float)ref_output[i]));
 	}
@@ -564,9 +576,9 @@ void cleanup() {
     //     clReleaseCommandQueue(store_queue);
     // }
 
-    if(x_buf) {
-        clReleaseMemObject(x_buf);
-    }
+    // if(x_buf) {
+    //     clReleaseMemObject(x_buf);
+    // }
     if(A_buf) {
         clReleaseMemObject(A_buf);
     }

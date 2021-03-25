@@ -239,7 +239,7 @@ void init_problem() {
 
     std::map<spMV_data, std::vector<spMV_data> > nodes;
 
-    for (int i = 0; i < N; i++) {
+    for (int i = 0; i < NNZ; i++) {
         start_node = 0;
         end_node = 0;
         for (int ib = 0; ib < SCALE; ib++) {
@@ -293,7 +293,7 @@ void init_problem() {
         dt_A[i].V = (spMV_float) rand() / (RAND_MAX + 1.0);
     }
 
-	printf("The number of actual non-zero elements in the block is: %lu\n", col_iter);
+	printf("The number of actual non-zero elements in the block is: %u\n", col_iter);
 
     // for (i = 0; i < N * N; i++) {
     //     if (dt_A[i] != 0) {
@@ -317,7 +317,7 @@ void init_problem() {
         }
     }
 
-    printf("NZR: %lu\n", NZR);
+    printf("NZR: %u\n", NZR);
 
     dt_y = (pack_out*)acl_aligned_malloc(NZR * sizeof(pack_out));
     ref_output = (spMV_float*)acl_aligned_malloc(NZR * sizeof(spMV_float));
@@ -339,8 +339,9 @@ void run() {
     status = clEnqueueWriteBuffer(load_queue, A_buf, CL_TRUE,
                                     0, NNZ * sizeof(pack_in), dt_A, 0, NULL, NULL);
     checkError(status, "Failed to transfer A");
+    printf("sizeof packin: %lu\n", sizeof(pack_in));
 
-    status = clEnqueueWriteBuffer(load_queue, x_buf, CL_TRUE,
+    status = clEnqueueWriteBuffer(exec_queue, x_buf, CL_TRUE,
                                     0, N * sizeof(spMV_float), dt_x, 0, NULL, NULL);
     checkError(status, "Failed to transfer x");
 
@@ -350,6 +351,7 @@ void run() {
 
     // Wait for all queues to finish.
     clFinish(load_queue);
+    clFinish(exec_queue);
     clFinish(store_queue);
 
     // Launch kernels.
@@ -382,7 +384,7 @@ void run() {
     status = clSetKernelArg(store_kernel, argi++, sizeof(cl_mem), &y_buf);
     checkError(status, "Failed to set argument %d", argi - 1);
 
-    status = clSetKernelArg(store_kernel, argi++, sizeof(spMV_data), &real_NNZ);
+    status = clSetKernelArg(store_kernel, argi++, sizeof(spMV_data), &NZR);
     checkError(status, "Failed to set argument %d", argi - 1);
 
     // Enqueue kernel.
@@ -516,7 +518,7 @@ void verify() {
 
 	for(i = 0; i < NZR ; i++) {
 		if (!nearlyEqual((float)dt_y[i].value, (float)ref_output[i])) {
-            printf("y[%lu]: %f, ref_output[%lu]: %f\n", i, dt_y[i].value, i, ref_output[i]);
+            printf("y[%u]: %f, ref_output[%u]: %f\n", i, dt_y[i].value, i, ref_output[i]);
 		}
 		assert(nearlyEqual((float)dt_y[i].value, (float)ref_output[i]));
 	}
